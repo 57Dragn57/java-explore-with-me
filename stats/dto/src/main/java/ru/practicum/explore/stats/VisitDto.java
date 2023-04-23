@@ -9,7 +9,7 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class VisitDto {
+public class VisitDto implements Comparable<VisitDto> {
     private String app;
     private String uri;
     private long hits;
@@ -38,4 +38,15 @@ public class VisitDto {
         return hash;
     }
 
+    @Override
+    public int compareTo(VisitDto visitDto) {
+
+        if (hits < visitDto.getHits()) {
+            return 1;
+        } else if (hits > visitDto.getHits()) {
+            return -1;
+        } else {
+            return uri.compareTo(visitDto.getUri());
+        }
+    }
 }
