@@ -1,7 +1,9 @@
 package ru.practicum.explore.stats;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.explore.stats.model.Hit;
 
+@UtilityClass
 public class HitMapper {
     public static Hit toHit(HitDto hitDto) {
 

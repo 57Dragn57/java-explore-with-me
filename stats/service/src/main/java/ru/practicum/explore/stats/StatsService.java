@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 import ru.practicum.explore.stats.model.Hit;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -22,48 +23,30 @@ public class StatsService {
         HitMapper.toHitDto(hit);
     }
 
-    public Set<VisitDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique, int limit) {
+    public List<VisitDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique, int limit) {
 
-        List<Hit> hits;
+        List<HitShort> hits;
 
         if (uris.size() == 0) {
-            hits = hitRepository.findByTimestampIsAfterAndTimestampIsBefore(start, end);
-        } else {
-            hits = hitRepository.findByTimestampIsAfterAndTimestampIsBeforeAndUriIn(start, end, uris);
-        }
-
-        int count = 0;
-        List<VisitDto> visits = new ArrayList<>();
-
-        for (Hit hit : hits) {
-            VisitDto gotVisitDto = null;
-            for (VisitDto visitDto : visits) {
-                if (visitDto.getUri().equals(hit.getUri())) {
-                    gotVisitDto = visitDto;
-                    break;
-                }
-            }
-
-            if (gotVisitDto == null) {
-                VisitDto visitDto = new VisitDto();
-
-                visitDto.setApp(hit.getApp());
-                visitDto.setUri(hit.getUri());
-                visitDto.setHits(1);
-
-                visits.add(visitDto);
-
-                count++;
-                if (count == limit) {
-                    break;
-                }
+            if (unique) {
+                hits = hitRepository.findHitsByUnique(start, end);
             } else {
-                if (!unique) {
-                    gotVisitDto.setHits(gotVisitDto.getHits() + 1);
-                }
+                hits = hitRepository.findHits(start, end);
+            }
+        } else {
+            if (unique) {
+                hits = hitRepository.findHitsByUriAndUnique(start, end, uris);
+            } else {
+                hits = hitRepository.findHitsByUri(start, end, uris);
             }
         }
 
-        return new TreeSet<>(visits);
+        List<VisitDto> visit = new ArrayList<>();
+
+        for (HitShort hitShort : hits) {
+            visit.add(new VisitDto(hitShort.getApp(), hitShort.getUri(), hitShort.getCount()));
+        }
+
+        return visit;
     }
 }

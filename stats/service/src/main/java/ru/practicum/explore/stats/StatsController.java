@@ -9,7 +9,6 @@ import ru.practicum.explore.Constants;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 
 @Slf4j
@@ -18,7 +17,7 @@ import java.util.Set;
 public class StatsController {
     private final StatsService statsService;
 
-    @PostMapping(path = "/hit")
+    @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
     public void addHit(@RequestBody HitDto hitDto) {
         log.info("Add hit: app {}, uri {}, ip {}, timestamp {}",
@@ -26,11 +25,11 @@ public class StatsController {
         statsService.addHit(hitDto);
     }
 
-    @GetMapping(path = "/stats")
-    public Set<VisitDto> getStats(@RequestParam @DateTimeFormat(pattern = Constants.DATE_FORMAT) LocalDateTime start,
-                                  @RequestParam @DateTimeFormat(pattern = Constants.DATE_FORMAT) LocalDateTime end,
-                                  @RequestParam(defaultValue = "") List<String> uris,
-                                  @RequestParam(defaultValue = "false") Boolean unique) {
+    @GetMapping("/stats")
+    public List<VisitDto> getStats(@RequestParam @DateTimeFormat(pattern = Constants.DATE_FORMAT) LocalDateTime start,
+                                   @RequestParam @DateTimeFormat(pattern = Constants.DATE_FORMAT) LocalDateTime end,
+                                   @RequestParam(defaultValue = "") List<String> uris,
+                                   @RequestParam(defaultValue = "false") Boolean unique) {
         log.info("Get stats: start {}, end {}, uris {}, unique {}, ", start, end, uris, unique);
         return statsService.getStats(start, end, uris, unique, Constants.DEFAULT_COUNT_STATS_RECORDS);
     }
