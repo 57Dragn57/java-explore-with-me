@@ -23,7 +23,7 @@ public class StatsService {
         HitMapper.toHitDto(hit);
     }
 
-    public List<VisitDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique, int limit) {
+    public List<VisitDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
 
         List<HitShort> hits;
 

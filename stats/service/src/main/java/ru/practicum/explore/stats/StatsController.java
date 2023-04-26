@@ -31,6 +31,6 @@ public class StatsController {
                                    @RequestParam(defaultValue = "") List<String> uris,
                                    @RequestParam(defaultValue = "false") Boolean unique) {
         log.info("Get stats: start {}, end {}, uris {}, unique {}, ", start, end, uris, unique);
-        return statsService.getStats(start, end, uris, unique, Constants.DEFAULT_COUNT_STATS_RECORDS);
+        return statsService.getStats(start, end, uris, unique);
     }
 }
