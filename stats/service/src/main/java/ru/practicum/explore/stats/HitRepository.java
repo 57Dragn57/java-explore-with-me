@@ -11,30 +11,30 @@ public interface HitRepository extends JpaRepository<Hit, Long> {
 
     @Query(value = "select APP, URI, count(URI) as count" +
             " from HITS" +
-            " where ?1 < CREATED_DATE and ?2 > CREATED_DATE" +
+            " where ?1 <= CREATED_DATE and ?2 >= CREATED_DATE" +
             " group by APP, URI " +
-            " order by APP, URI DESC ", nativeQuery = true)
+            " order by count DESC ", nativeQuery = true)
     List<HitShort> findHits(LocalDateTime startTime, LocalDateTime endTime);
 
-    @Query(value = "select distinct IP, APP, URI, count(ID) as count" +
+    @Query(value = "select APP, URI, count(distinct IP) as count" +
             " from HITS" +
-            " where ?1 < CREATED_DATE and ?2 > CREATED_DATE" +
-            " group by APP, URI, IP" +
-            " order by APP, URI DESC ", nativeQuery = true)
-    List<HitShort> findHitsByUnique(LocalDateTime startTime, LocalDateTime endTime);
-
-    @Query(value = "select APP, URI, count(ID) as count" +
-            " from HITS" +
-            " where ?1 < CREATED_DATE and ?2 > CREATED_DATE and URI IN ?3" +
+            " where ?1 <= CREATED_DATE and ?2 >= CREATED_DATE" +
             " group by APP, URI" +
-            " order by APP, URI DESC ", nativeQuery = true)
-    List<HitShort> findHitsByUri(LocalDateTime startTime, LocalDateTime endTime, List<String> uris);
+            " order by count DESC ", nativeQuery = true)
+    List<HitShort> findHitsByUnique(LocalDateTime startTime, LocalDateTime endTime);
 
     @Query(value = "select APP, URI, count(URI) as count" +
             " from HITS" +
-            " where ?1 < CREATED_DATE and ?2 > CREATED_DATE and URI NOT IN ?3" +
-            " group by APP, URI, IP" +
-            " order by APP, URI DESC ", nativeQuery = true)
+            " where ?1 <= CREATED_DATE and ?2 >= CREATED_DATE and URI IN ?3" +
+            " group by APP, URI" +
+            " order by count DESC ", nativeQuery = true)
+    List<HitShort> findHitsByUri(LocalDateTime startTime, LocalDateTime endTime, List<String> uris);
+
+    @Query(value = "select APP, URI, count(distinct IP) as count" +
+            " from HITS" +
+            " where ?1 <= CREATED_DATE and ?2 >= CREATED_DATE and URI NOT IN ?3" +
+            " group by APP, URI" +
+            " order by count DESC ", nativeQuery = true)
     List<HitShort> findHitsByUriAndUnique(LocalDateTime startTime, LocalDateTime endTime, List<String> uris);
 
 }
