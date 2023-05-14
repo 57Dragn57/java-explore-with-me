@@ -5,6 +5,7 @@ services:
   ewm-service:
     build: ewm
     image: image_ewm
+    restart: always
     container_name: container_ewm
     ports:
       - "8080:8080"
