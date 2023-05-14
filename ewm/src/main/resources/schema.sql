@@ -32,11 +32,10 @@ create table if not exists events
     state              varchar(33),
     title              varchar(200)                                    not null,
     views              bigint default 0,
-    CONSTRAINT pk_events PRIMARY KEY (id),
-    FOREIGN KEY(category) REFERENCES categories(id) ON DELETE CASCADE,
-    FOREIGN KEY(initiator) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (category) REFERENCES categories (id) ON DELETE CASCADE,
+    FOREIGN KEY (initiator) REFERENCES users (id) ON DELETE CASCADE
 );
-//create unique index if not exists EVENT_ID_UINDEX on EVENTS (id);
+
 
 
 CREATE TABLE IF NOT EXISTS requests
@@ -55,13 +54,13 @@ CREATE TABLE IF NOT EXISTS compilations
     pinned BOOLEAN                                 NOT NULL,
     CONSTRAINT pk_compilations PRIMARY KEY (id)
 );
-//create unique index if not exists COMPILATION_ID_UINDEX on compilations (id);
+
 
 CREATE TABLE IF NOT EXISTS compilations_events
 (
-    id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-    compilation  BIGINT                                NOT NULL,
-    event        BIGINT                                NOT NULL,
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+    compilation BIGINT                                          NOT NULL,
+    event       BIGINT                                          NOT NULL,
     FOREIGN KEY (compilation) REFERENCES compilations (id) ON DELETE CASCADE,
     FOREIGN KEY (event) REFERENCES events (id) ON DELETE CASCADE
 );

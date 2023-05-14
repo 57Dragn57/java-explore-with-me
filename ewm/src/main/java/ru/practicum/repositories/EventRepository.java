@@ -8,7 +8,7 @@ import ru.practicum.model.Category;
 import ru.practicum.model.Event;
 import ru.practicum.model.User;
 import ru.practicum.stats.State;
-import ru.practicum.stats.Status;
+
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -17,19 +17,6 @@ import java.util.List;
 public interface EventRepository extends JpaRepository<Event, Long> {
     Page<Event> findByInitiatorId(long userId, Pageable pageable);
 
-    /*  @Query(value = "select *" +
-              " from events" +
-              " where (?1 is null or INITIATOR in ?1)" +
-              " and (?2 is null or STATE in ?2) " +
-              " and (?3 is null or CATEGORY in ?3)" +
-              " and (?4 is null or ?5 is null or EVENT_DATE between ?4 and ?5)"
-              , nativeQuery = true)
-      Page<Event> searchEvent(List<Long> users,
-                              List<String> states,
-                              List<Long> categories,
-                              LocalDateTime rangeStart,
-                              LocalDateTime rangeEnd,
-                              Pageable pageable); */
     Page<Event> findByInitiatorInAndStateInAndCategoryInAndEventDateBetween(Collection<User> initiator,
                                                                             Collection<State> state,
                                                                             Collection<Category> category,

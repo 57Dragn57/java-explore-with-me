@@ -11,7 +11,7 @@ services:
     depends_on:
       - ewm-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/explore
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/explore
       - POSTGRES_DB=explore
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
