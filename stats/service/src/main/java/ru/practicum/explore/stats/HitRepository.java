@@ -32,7 +32,7 @@ public interface HitRepository extends JpaRepository<Hit, Long> {
 
     @Query(value = "select APP, URI, count(distinct IP) as count" +
             " from HITS" +
-            " where ?1 <= CREATED_DATE and ?2 >= CREATED_DATE and URI NOT IN ?3" +
+            " where ?1 <= CREATED_DATE and ?2 >= CREATED_DATE and URI IN ?3" +
             " group by APP, URI" +
             " order by count DESC ", nativeQuery = true)
     List<HitShort> findHitsByUriAndUnique(LocalDateTime startTime, LocalDateTime endTime, List<String> uris);
