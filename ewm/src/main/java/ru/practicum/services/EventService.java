@@ -5,9 +5,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.Constants;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.exceptions.NotFoundException;
+import ru.practicum.explore.stats.HitDto;
 import ru.practicum.explore.stats.StatsClient;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.repositories.EventRepository;
@@ -54,7 +56,7 @@ public class EventService {
             return List.of();
         }
 
-        // statsClient.addHit(new HitDto(Constants.APP_NAME, endpoint, ip, LocalDateTime.now())); Возвращает ошибку, не работает
+        statsClient.addHit(new HitDto(Constants.APP_NAME, endpoint, ip, LocalDateTime.now()));
         return events;
     }
 
@@ -64,7 +66,7 @@ public class EventService {
         EventFullDto event = EventMapper.toEventDto(eventRepository.findById(id).orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found")));
 
         if (event.getState().equals(State.PUBLISHED)) {
-            //  statsClient.addHit(new HitDto(Constants.APP_NAME, endpoint, ip, LocalDateTime.now())); Возвращает ошибку, не работает
+            statsClient.addHit(new HitDto(Constants.APP_NAME, endpoint, ip, LocalDateTime.now()));
             return event;
         }
         throw new NotFoundException("Event with id=" + id + " was not found");
