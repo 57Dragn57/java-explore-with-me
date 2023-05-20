@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.CompilationDto;
 import ru.practicum.services.CompilationService;
 
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
@@ -26,7 +27,7 @@ public class CompilationsController {
     }
 
     @GetMapping("/{compId}")
-    public CompilationDto getCompilation(@PathVariable long compId) {
+    public CompilationDto getCompilation(@Positive @PathVariable long compId) {
         log.info("Получение подборки по id: {}", compId);
         return compilationService.getCompilation(compId);
     }

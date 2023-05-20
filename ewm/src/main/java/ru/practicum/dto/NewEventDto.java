@@ -4,13 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.Constants;
 import ru.practicum.model.Location;
 
-import javax.validation.constraints.Future;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Data
 @Builder
@@ -23,7 +24,6 @@ public class NewEventDto {
     private int category;
     @NotBlank
     private String description;
-    @Future
     private LocalDateTime eventDate;
     @NotNull
     private Location location;
@@ -32,4 +32,8 @@ public class NewEventDto {
     private Boolean requestModeration;
     @NotBlank
     private String title;
+
+    public void setEventDate(String date) {
+        this.eventDate = LocalDateTime.parse(date, DateTimeFormatter.ofPattern(Constants.DATE_FORMAT));
+    }
 }

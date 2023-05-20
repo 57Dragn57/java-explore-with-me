@@ -16,7 +16,6 @@ import ru.practicum.mapper.UserMapper;
 import ru.practicum.model.Category;
 import ru.practicum.model.Compilation;
 import ru.practicum.model.Event;
-import ru.practicum.model.User;
 import ru.practicum.repositories.CategoryRepository;
 import ru.practicum.repositories.CompilationRepository;
 import ru.practicum.repositories.EventRepository;
@@ -24,6 +23,7 @@ import ru.practicum.repositories.UserRepository;
 import ru.practicum.stats.State;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,6 +41,9 @@ public class AdminService {
 
     @Transactional
     public UserDto createUser(UserDto userDto) {
+        if (userRepository.existsByName(userDto.getName())) {
+            throw new ConflictException("This username already exists");
+        }
         return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userDto)));
     }
 
@@ -66,18 +69,25 @@ public class AdminService {
     public void deleteUser(long userId) {
         if (userRepository.existsById(userId)) {
             userRepository.deleteById(userId);
+        } else {
+            throw new UserNotFoundException("User with id=" + userId + " was not found");
         }
-        throw new UserNotFoundException("User with id=" + userId + " was not found");
     }
 
     @Transactional
     public CategoryDto createCategory(CategoryDto categoryDto) {
+        if (categoryRepository.existsByName(categoryDto.getName())) {
+            throw new ConflictException("This category name already exists");
+        }
         return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(categoryDto)));
     }
 
     @Transactional
     public CategoryDto updateCategory(long catId, CategoryDto categoryDto) {
         Category category = categoryRepository.findById(catId).orElseThrow(() -> new NotFoundException("Category with id=" + catId + " was not found"));
+        if (categoryRepository.existsByName(categoryDto.getName())) {
+            throw new ConflictException("This category name already exists");
+        }
         category.setName(categoryDto.getName());
         return CategoryMapper.toCategoryDto(category);
     }
@@ -85,7 +95,7 @@ public class AdminService {
     @Transactional
     public void deleteCategory(long catId) {
         if (categoryRepository.existsById(catId)) {
-            if (!eventRepository.findByCategoryId(catId).isEmpty()) {
+            if (!eventRepository.existsByCategoryId(catId)) {
                 categoryRepository.deleteById(catId);
             } else {
                 throw new ConflictException("The category is not empty");
@@ -102,29 +112,26 @@ public class AdminService {
                                           LocalDateTime rangeEnd,
                                           int from,
                                           int size) {
-        List<User> usersList = (users == null) ? Collections.emptyList() : userRepository.findAllById(users);
-        List<State> stateList = (states == null) ? Collections.emptyList()
-                : states.stream().map(State::valueOf).collect(Collectors.toList());
-        List<Category> categoryList = (categories == null) ? Collections.emptyList() : categoryRepository.findAllById(categories);
-        LocalDateTime start = (rangeStart == null) ? LocalDateTime.now().minusYears(1) : rangeStart;
-        LocalDateTime end = (rangeEnd == null) ? LocalDateTime.now().minusYears(1) : rangeEnd;
 
-        return EventMapper.toEventFullDtoList(eventRepository.findByInitiatorInAndStateInAndCategoryInAndEventDateBetween(
-                usersList,
+        Collection<State> stateList = (states == null) ? Collections.emptyList()
+                : states.stream().map(State::valueOf).collect(Collectors.toList());
+
+        return EventMapper.toEventFullDtoList(eventRepository.searchEvents(
+                users,
                 stateList,
-                categoryList,
-                start,
-                end,
+                categories,
+                rangeStart,
+                rangeEnd,
                 PageRequest.of(from / size, size, Sort.by("eventDate"))).toList());
     }
 
     @Transactional
     public EventFullDto updateEvent(long eventId, UpdateEventRequest eventRequest) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
-        if (LocalDateTime.now().plusHours(1).isBefore(eventRequest.getEventDate()))
-            if (eventRequest.getCategory() != 0) {
-                event.setCategory(categoryRepository.getReferenceById(eventRequest.getCategory()));
-            }
+
+        if (eventRequest.getCategory() != 0) {
+            event.setCategory(categoryRepository.getReferenceById(eventRequest.getCategory()));
+        }
 
         return valid(event, eventRequest);
     }
@@ -151,7 +158,7 @@ public class AdminService {
         if (compilationDto.getEvents() != null) {
             compilation.setEvents(eventRepository.findAllById(compilationDto.getEvents()));
         }
-        if (!compilationDto.getTitle().isBlank()) {
+        if (compilationDto.getTitle() != null) {
             compilation.setTitle(compilationDto.getTitle());
         }
 

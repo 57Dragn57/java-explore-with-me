@@ -10,6 +10,8 @@ import ru.practicum.Constants;
 import ru.practicum.dto.*;
 import ru.practicum.services.AdminService;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,7 +25,7 @@ public class AdminController {
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDto createUser(@RequestBody UserDto userDto) {
+    public UserDto createUser(@Valid @RequestBody UserDto userDto) {
         log.info("Добавление нового пользователя: {}", userDto.getEmail());
         return adminService.createUser(userDto);
     }
@@ -42,28 +44,28 @@ public class AdminController {
 
     @DeleteMapping("/users/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable long userId) {
+    public void deleteUser(@Positive @PathVariable long userId) {
         log.info("Удаление пользователя с id: {}", userId);
         adminService.deleteUser(userId);
     }
 
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
-    public CategoryDto createCategory(@RequestBody CategoryDto categoryDto) {
+    public CategoryDto createCategory(@Valid @RequestBody CategoryDto categoryDto) {
         log.info("Добавление категории: {}", categoryDto.getName());
         return adminService.createCategory(categoryDto);
     }
 
     @DeleteMapping("/categories/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategory(@PathVariable long catId) {
+    public void deleteCategory(@Positive @PathVariable long catId) {
         log.info("Удаление категории: {}", catId);
         adminService.deleteCategory(catId);
     }
 
     @PatchMapping("/categories/{catId}")
-    public CategoryDto updateCategory(@PathVariable long catId,
-                                      @RequestBody CategoryDto categoryDto) {
+    public CategoryDto updateCategory(@Positive @PathVariable long catId,
+                                      @Valid @RequestBody CategoryDto categoryDto) {
         log.info("Обновление категории: {}", catId);
         return adminService.updateCategory(catId, categoryDto);
     }
@@ -81,14 +83,14 @@ public class AdminController {
     }
 
     @PatchMapping("/events/{eventId}")
-    public EventFullDto updateEvent(@PathVariable long eventId, @RequestBody UpdateEventRequest eventRequest) {
+    public EventFullDto updateEvent(@Positive @PathVariable long eventId, @RequestBody UpdateEventRequest eventRequest) {
         log.info("Обновление события id: {}", eventId);
         return adminService.updateEvent(eventId, eventRequest);
     }
 
     @PostMapping("/compilations")
     @ResponseStatus(HttpStatus.CREATED)
-    public CompilationDto createCompilation(@RequestBody NewCompilationDto newCompilation) {
+    public CompilationDto createCompilation(@Valid @RequestBody NewCompilationDto newCompilation) {
         log.info("Добавление новой подборки событий");
         return adminService.createCompilation(newCompilation);
     }
@@ -101,7 +103,7 @@ public class AdminController {
     }
 
     @PatchMapping("/compilations/{compId}")
-    public CompilationDto updateCompilation(@PathVariable long compId, @RequestBody UpdateCompilationRequest compilation) {
+    public CompilationDto updateCompilation(@PathVariable long compId, @Valid @RequestBody UpdateCompilationRequest compilation) {
         log.info("Обновление подборки с id: {}", compId);
         return adminService.updateCompilation(compId, compilation);
     }

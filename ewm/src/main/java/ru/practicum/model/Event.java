@@ -18,6 +18,7 @@ public class Event {
     @ManyToOne(optional = false)
     @JoinColumn(name = "category", nullable = false)
     private Category category;
+    @Column(name = "confirmed_requests")
     private int confirmedRequests;
     @Column(name = "create_date")
     private LocalDateTime createdOn;
@@ -33,6 +34,7 @@ public class Event {
     private float lat;
     private float lon;
     private Boolean paid;
+    @Column(name = "participant_limit")
     private int participantLimit;
     @Column(name = "published_date")
     private LocalDateTime publishedOn;

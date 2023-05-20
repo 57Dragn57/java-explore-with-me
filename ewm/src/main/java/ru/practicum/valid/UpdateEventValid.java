@@ -3,6 +3,7 @@ package ru.practicum.valid;
 import lombok.experimental.UtilityClass;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.UpdateEventRequest;
+import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.ForbiddenException;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
@@ -21,7 +22,11 @@ public class UpdateEventValid {
             event.setDescription(eventRequest.getDescription());
         }
         if (eventRequest.getEventDate() != null) {
-            event.setEventDate(eventRequest.getEventDate());
+            if (LocalDateTime.now().plusHours(1).isBefore(eventRequest.getEventDate())) {
+                event.setEventDate(eventRequest.getEventDate());
+            } else {
+                throw new ConflictException("Event cannot start in the past");
+            }
         }
         if (eventRequest.getLocation() != null) {
             event.setLon(eventRequest.getLocation().getLon());
@@ -39,30 +44,38 @@ public class UpdateEventValid {
         if (eventRequest.getTitle() != null) {
             event.setTitle(eventRequest.getTitle());
         }
-        if (eventRequest.getState() != null) {
-            StateAction stateAction = StateAction.valueOf(eventRequest.getState().name());
+        if (eventRequest.getStateAction() != null) {
+            StateAction stateAction = StateAction.valueOf(eventRequest.getStateAction().name());
 
             switch (stateAction) {
                 case PUBLISH_EVENT:
                     if (LocalDateTime.now().plusHours(1).isBefore(event.getEventDate())) {
-                        event.setState(State.PUBLISHED);
+                        if (event.getState().equals(State.PENDING)) {
+                            event.setState(State.PUBLISHED);
+                            event.setPublishedOn(LocalDateTime.now());
+                        } else {
+                            throw new ConflictException("Event already canceled/published");
+                        }
                     } else {
-                        throw new ForbiddenException("Cannot publish the event because it's not in the right state: " + eventRequest.getState());
+                        throw new ForbiddenException("Cannot publish the event because it's not in the right state: " + eventRequest.getStateAction());
                     }
-
+                    break;
                 case REJECT_EVENT:
+                case CANCEL_REVIEW:
                     if (event.getState().equals(State.PUBLISHED)) {
-                        throw new ForbiddenException("Cannot publish the event because it's not in the right state: " + State.PUBLISHED);
+                        throw new ConflictException("Event already published");
                     } else {
                         event.setState(State.CANCELED);
                     }
-
-                case SEND_TO_REVIEW:
-
-
-                case CANCEL_REVIEW:
-
                     break;
+                case SEND_TO_REVIEW:
+                    if (event.getState().equals(State.PUBLISHED)) {
+                        throw new ConflictException("Event already published");
+                    } else {
+                        event.setState(State.PENDING);
+                    }
+                    break;
+
             }
         }
 

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.CategoryDto;
 import ru.practicum.services.CategoryService;
 
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
@@ -23,7 +24,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{catId}")
-    public CategoryDto getCategory(@PathVariable long catId) {
+    public CategoryDto getCategory(@Positive @PathVariable long catId) {
         log.info("олучение категории id: {}", catId);
         return categoryService.getCategory(catId);
     }

@@ -5,7 +5,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.*;
-import ru.practicum.exceptions.*;
+import ru.practicum.exceptions.ConflictException;
+import ru.practicum.exceptions.NotFoundException;
+import ru.practicum.exceptions.UserNotFoundException;
 import ru.practicum.mapper.CategoryMapper;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.mapper.RequestMapper;
@@ -18,6 +20,7 @@ import ru.practicum.stats.State;
 import ru.practicum.stats.Status;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static ru.practicum.valid.UpdateEventValid.valid;
@@ -41,7 +44,7 @@ public class UserService {
             event.setState(State.PENDING);
             return EventMapper.toEventDto(eventRepository.save(event));
         }
-        throw new ForbiddenException("Field: eventDate. Error: должно содержать дату, которая еще не наступила. Value: " + eventDto.getEventDate());
+        throw new ConflictException("Conflict of parameters date and time");
     }
 
     public List<EventShortDto> getEvents(long userId, int from, int size) {
@@ -57,7 +60,7 @@ public class UserService {
     public EventFullDto getFullEvent(long userId, long eventId) {
         EventFullDto event = EventMapper.toEventDto(eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found")));
 
-        if (event.getInitiatior().getId() == userId) {
+        if (event.getInitiator().getId() == userId) {
             return event;
         } else {
             throw new NotFoundException("Event with id=" + eventId + " was not found");
@@ -77,10 +80,10 @@ public class UserService {
                 }
                 return valid(event, eventRequest);
             } else {
-                throw new NotFoundException("Event with id=" + eventId + " was not found");
+                throw new ConflictException("You do not have rights to edit this event");
             }
         } else {
-            throw new ConflictValueException("Only pending or canceled events can be changed");
+            throw new ConflictException("Conflict of parameters date or state");
         }
     }
 
@@ -96,9 +99,10 @@ public class UserService {
         return dtos;
     }
 
+    @Transactional
     public EventRequestStatusUpdateResult changeEventStatus(EventRequestStatusUpdateRequest eventRequest, long userId, long eventId) {
         EventRequestStatusUpdateResult eventResult = new EventRequestStatusUpdateResult();
-        List<ParticipationRequestDto> requests = RequestMapper.toRequestDtoList(requestRepository.findAllByIdIn(eventRequest.getRequestIds()));
+        List<Request> requests = requestRepository.findAllByIdIn(eventRequest.getRequestIds());
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
 
@@ -106,15 +110,23 @@ public class UserService {
             return new EventRequestStatusUpdateResult();
         }
 
-        for (ParticipationRequestDto prd : requests) {
+        for (Request prd : requests) {
             if (prd.getStatus().equals(Status.PENDING) && event.getConfirmedRequests() < event.getParticipantLimit()) {
                 if (eventRequest.getStatus().equals(Status.CONFIRMED)) {
                     prd.setStatus(Status.CONFIRMED);
-                    eventResult.getConfirmedRequests().add(prd);
+                    if (eventResult.getConfirmedRequests() == null) {
+                        eventResult.setConfirmedRequests(new ArrayList<>());
+                    }
+                    eventResult.getConfirmedRequests().add(RequestMapper.toRequestDto(prd));
                     event.setConfirmedRequests(event.getConfirmedRequests() + 1);
                 } else {
                     prd.setStatus(Status.REJECTED);
-                    eventResult.getRejectedRequests().add(prd);
+
+                    if (eventResult.getRejectedRequests() == null) {
+                        eventResult.setRejectedRequests(new ArrayList<>());
+                    }
+
+                    eventResult.getRejectedRequests().add(RequestMapper.toRequestDto(prd));
                 }
             } else {
                 throw new ConflictException("The participant limit has been reached");
@@ -139,16 +151,17 @@ public class UserService {
         Request request = Request.builder()
                 .created(LocalDateTime.now())
                 .user(UserMapper.toUser(adminService.getUser(userId)))
-                .event(eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found")))
                 .build();
 
-        if (requestRepository.existsByUserId(userId) &&
-                request.getEvent().getInitiator().getId() != userId &&
-                request.getEvent().getState() == State.PUBLISHED) {
-            if (request.getEvent().getParticipantLimit() == 0 ||
-                    request.getEvent().getParticipantLimit() > request.getEvent().getConfirmedRequests()) {
-                if (!request.getEvent().getRequestModeration()) {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+
+        if (!requestRepository.existsByUserIdAndEventId(userId, eventId) && event.getInitiator().getId() != userId &&
+                event.getState() == State.PUBLISHED) {
+            if (event.getParticipantLimit() == 0 ||
+                    event.getParticipantLimit() > event.getConfirmedRequests()) {
+                if (!event.getRequestModeration()) {
                     request.setStatus(Status.CONFIRMED);
+                    event.setConfirmedRequests(event.getConfirmedRequests() + 1);
                 } else {
                     request.setStatus(Status.PENDING);
                 }
@@ -161,6 +174,7 @@ public class UserService {
             throw new ConflictException("Your request is not validated");
         }
 
+        request.setEvent(event);
         return RequestMapper.toRequestDto(requestRepository.save(request));
     }
 
@@ -168,7 +182,7 @@ public class UserService {
     public ParticipationRequestDto cancelRequest(long userId, long requestId) {
         Request request = requestRepository.findById(requestId).orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found"));
         if (request.getUser().getId() == userId) {
-            request.setStatus(Status.REJECTED);
+            request.setStatus(Status.CANCELED);
             return RequestMapper.toRequestDto(request);
         } else {
             throw new UserNotFoundException("User with id=" + userId + " was not found");

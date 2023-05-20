@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,7 +13,7 @@ public class EventShortDto {
     private String annotation;
     private CategoryDto category;
     private int confirmedRequests;
-    private LocalDateTime eventDate;
+    private String eventDate;
     private long id;
     private UserShortDto initiator;
     private Boolean paid;

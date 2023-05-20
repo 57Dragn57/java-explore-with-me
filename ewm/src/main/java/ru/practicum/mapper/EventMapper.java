@@ -1,12 +1,14 @@
 package ru.practicum.mapper;
 
 import lombok.experimental.UtilityClass;
+import ru.practicum.Constants;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.NewEventDto;
 import ru.practicum.model.Event;
 import ru.practicum.model.Location;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,10 +34,10 @@ public class EventMapper {
                 .category(CategoryMapper.toCategoryDto(event.getCategory()))
                 .confirmedRequests(event.getConfirmedRequests())
                 .createdOn(event.getCreatedOn())
-                .initiatior(UserMapper.toUserShortDto(event.getInitiator()))
+                .initiator(UserMapper.toUserShortDto(event.getInitiator()))
                 .annotation(event.getAnnotation())
                 .description(event.getDescription())
-                .eventDate(event.getEventDate())
+                .eventDate(event.getEventDate().format(DateTimeFormatter.ofPattern(Constants.DATE_FORMAT)))
                 .publishedOn(event.getPublishedOn())
                 .location(new Location(event.getLat(), event.getLon()))
                 .paid(event.getPaid())
@@ -53,7 +55,7 @@ public class EventMapper {
                 .category(CategoryMapper.toCategoryDto(event.getCategory()))
                 .initiator(UserMapper.toUserShortDto(event.getInitiator()))
                 .confirmedRequests(event.getConfirmedRequests())
-                .eventDate(event.getEventDate())
+                .eventDate(event.getEventDate().format(DateTimeFormatter.ofPattern(Constants.DATE_FORMAT)))
                 .id(event.getId())
                 .paid(event.getPaid())
                 .title(event.getTitle())

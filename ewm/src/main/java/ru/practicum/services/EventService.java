@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.exceptions.NotFoundException;
+import ru.practicum.explore.stats.StatsClient;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.repositories.EventRepository;
 import ru.practicum.stats.Sorted;
@@ -23,6 +24,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @AllArgsConstructor
 public class EventService {
     private EventRepository eventRepository;
+    private StatsClient statsClient;
 
     public List<EventShortDto> getEventByFilters(String text,
                                                  List<Long> categories,
@@ -43,6 +45,8 @@ public class EventService {
             } else if (Sorted.VIEWS.toString().equals(sort)) {
                 sorted = Sort.by(DESC, "views");
             }
+        } else {
+            sorted = Sort.by("id");
         }
         events = EventMapper.toEventShortDtoList(eventRepository.findEventsByFilters(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, PageRequest.of(from / size, size, sorted)).toList());
 
@@ -50,13 +54,17 @@ public class EventService {
             return List.of();
         }
 
+        // statsClient.addHit(new HitDto(Constants.APP_NAME, endpoint, ip, LocalDateTime.now())); Возвращает ошибку, не работает
         return events;
     }
 
-    public EventFullDto getEventById(long id) {
+    public EventFullDto getEventById(long id,
+                                     String ip,
+                                     String endpoint) {
         EventFullDto event = EventMapper.toEventDto(eventRepository.findById(id).orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found")));
 
         if (event.getState().equals(State.PUBLISHED)) {
+            //  statsClient.addHit(new HitDto(Constants.APP_NAME, endpoint, ip, LocalDateTime.now())); Возвращает ошибку, не работает
             return event;
         }
         throw new NotFoundException("Event with id=" + id + " was not found");
