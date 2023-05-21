@@ -31,7 +31,6 @@ create table if not exists events
     request_moderation boolean,
     state              varchar(33),
     title              varchar(200)                                    not null,
-    views              bigint default 0,
     FOREIGN KEY (category) REFERENCES categories (id) ON DELETE CASCADE,
     FOREIGN KEY (initiator) REFERENCES users (id) ON DELETE CASCADE
 );

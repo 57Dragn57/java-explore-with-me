@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @Data
@@ -14,7 +15,8 @@ import java.util.List;
 @Builder
 public class NewCompilationDto {
     private List<Long> events;
-    private Boolean pinned;
+    private boolean pinned;
     @NotBlank
+    @Size(max = 255)
     private String title;
 }

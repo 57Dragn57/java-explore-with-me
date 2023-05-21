@@ -1,4 +1,4 @@
-package ru.practicum.services;
+package ru.practicum.services.privates;
 
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.*;
 import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.NotFoundException;
-import ru.practicum.exceptions.UserNotFoundException;
 import ru.practicum.mapper.CategoryMapper;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.mapper.RequestMapper;
@@ -16,6 +15,8 @@ import ru.practicum.model.Event;
 import ru.practicum.model.Request;
 import ru.practicum.repositories.EventRepository;
 import ru.practicum.repositories.RequestRepository;
+import ru.practicum.services.admins.AdminUserService;
+import ru.practicum.services.publics.PublicCategoryService;
 import ru.practicum.stats.State;
 import ru.practicum.stats.Status;
 
@@ -26,12 +27,12 @@ import java.util.List;
 import static ru.practicum.valid.UpdateEventValid.valid;
 
 @Service
-@Transactional(readOnly = true)
 @AllArgsConstructor
-public class UserService {
+@Transactional(readOnly = true)
+public class PrivateEventService {
+    private PublicCategoryService categoryService;
+    private AdminUserService adminService;
     private EventRepository eventRepository;
-    private CategoryService categoryService;
-    private AdminService adminService;
     private RequestRepository requestRepository;
 
     @Transactional
@@ -78,7 +79,7 @@ public class UserService {
                 if (eventRequest.getCategory() != 0) {
                     event.setCategory(CategoryMapper.toCategory(categoryService.getCategory(eventRequest.getCategory())));
                 }
-                return valid(event, eventRequest);
+                return valid(event, eventRequest, "user");
             } else {
                 throw new ConflictException("You do not have rights to edit this event");
             }
@@ -106,7 +107,7 @@ public class UserService {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
 
-        if (!event.getRequestModeration() || event.getParticipantLimit() == 0 && event.getInitiator().getId() == userId) {
+        if (!event.isRequestModeration() || event.getParticipantLimit() == 0 && event.getInitiator().getId() == userId) {
             return new EventRequestStatusUpdateResult();
         }
 
@@ -133,60 +134,5 @@ public class UserService {
             }
         }
         return eventResult;
-    }
-
-    public List<ParticipationRequestDto> getRequests(long userId) {
-        adminService.getUser(userId);
-        List<ParticipationRequestDto> requestDtos = RequestMapper.toRequestDtoList(requestRepository.findByUserId(userId));
-
-        if (requestDtos == null) {
-            return List.of();
-        }
-
-        return requestDtos;
-    }
-
-    @Transactional
-    public ParticipationRequestDto createRequest(long userId, long eventId) {
-        Request request = Request.builder()
-                .created(LocalDateTime.now())
-                .user(UserMapper.toUser(adminService.getUser(userId)))
-                .build();
-
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
-
-        if (!requestRepository.existsByUserIdAndEventId(userId, eventId) && event.getInitiator().getId() != userId &&
-                event.getState() == State.PUBLISHED) {
-            if (event.getParticipantLimit() == 0 ||
-                    event.getParticipantLimit() > event.getConfirmedRequests()) {
-                if (!event.getRequestModeration()) {
-                    request.setStatus(Status.CONFIRMED);
-                    event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-                } else {
-                    request.setStatus(Status.PENDING);
-                }
-            } else {
-                throw new ConflictException("Your request is not validated");
-            }
-
-
-        } else {
-            throw new ConflictException("Your request is not validated");
-        }
-
-        request.setEvent(event);
-        return RequestMapper.toRequestDto(requestRepository.save(request));
-    }
-
-    @Transactional
-    public ParticipationRequestDto cancelRequest(long userId, long requestId) {
-        Request request = requestRepository.findById(requestId).orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found"));
-        if (request.getUser().getId() == userId) {
-            request.setStatus(Status.CANCELED);
-            return RequestMapper.toRequestDto(request);
-        } else {
-            throw new UserNotFoundException("User with id=" + userId + " was not found");
-        }
-
     }
 }

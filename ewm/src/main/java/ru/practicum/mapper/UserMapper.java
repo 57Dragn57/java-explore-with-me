@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class UserMapper {
-    public static User toUser(UserDto userDto) {
+    public User toUser(UserDto userDto) {
         return User.builder()
                 .id(userDto.getId())
                 .email(userDto.getEmail())
@@ -18,7 +18,7 @@ public class UserMapper {
                 .build();
     }
 
-    public static UserDto toUserDto(User user) {
+    public UserDto toUserDto(User user) {
         return UserDto.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -26,11 +26,11 @@ public class UserMapper {
                 .build();
     }
 
-    public static List<UserDto> toUserDtoList(List<User> users) {
+    public List<UserDto> toUserDtoList(List<User> users) {
         return users.stream().map(UserMapper::toUserDto).collect(Collectors.toList());
     }
 
-    public static UserShortDto toUserShortDto(User user) {
+    public UserShortDto toUserShortDto(User user) {
         return UserShortDto.builder()
                 .id(user.getId())
                 .name(user.getName())

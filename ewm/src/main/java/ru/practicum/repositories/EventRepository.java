@@ -52,13 +52,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                     " and (:paid is null or e.paid = :paid)" +
                     " and (e.eventDate between coalesce(:start, e.eventDate) and coalesce(:end, e.eventDate)" +
                     " and :available is null or e.participantLimit = 0 or e.confirmedRequests < e.participantLimit)")
-    Page<Event> findEventsByFilters(@Param("text") String text,
+    List<Event> findEventsByFilters(@Param("text") String text,
                                     @Param("cat") List<Long> categories,
                                     @Param("paid") Boolean paid,
                                     @Param("start") LocalDateTime rangeStart,
                                     @Param("end") LocalDateTime rangeEnd,
-                                    @Param("available") Boolean onlyAvailable,
-                                    Pageable pageable);
+                                    @Param("available") Boolean onlyAvailable);
 
   /*  @Query(value =
             "SELECT * FROM events " +

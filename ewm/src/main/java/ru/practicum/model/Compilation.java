@@ -3,7 +3,7 @@ package ru.practicum.model;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -20,7 +20,7 @@ public class Compilation {
     @JoinTable(name = "compilations_events",
             joinColumns = @JoinColumn(name = "compilation"),
             inverseJoinColumns = @JoinColumn(name = "event"))
-    private List<Event> events;
+    private Set<Event> events;
     private String title;
     private Boolean pinned;
 }

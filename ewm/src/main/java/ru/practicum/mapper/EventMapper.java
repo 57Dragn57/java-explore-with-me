@@ -4,31 +4,31 @@ import lombok.experimental.UtilityClass;
 import ru.practicum.Constants;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
+import ru.practicum.dto.Location;
 import ru.practicum.dto.NewEventDto;
 import ru.practicum.model.Event;
-import ru.practicum.model.Location;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @UtilityClass
 public class EventMapper {
-    public static Event toEvent(NewEventDto eventDto) {
+    public Event toEvent(NewEventDto eventDto) {
         return Event.builder()
                 .annotation(eventDto.getAnnotation())
                 .description(eventDto.getDescription())
                 .eventDate(eventDto.getEventDate())
                 .lat(eventDto.getLocation().getLat())
                 .lon(eventDto.getLocation().getLon())
-                .paid(eventDto.getPaid())
+                .paid(eventDto.isPaid())
                 .participantLimit(eventDto.getParticipantLimit())
                 .requestModeration(eventDto.getRequestModeration())
                 .title(eventDto.getTitle())
                 .build();
     }
 
-    public static EventFullDto toEventDto(Event event) {
+    public EventFullDto toEventDto(Event event) {
         return EventFullDto.builder()
                 .id(event.getId())
                 .category(CategoryMapper.toCategoryDto(event.getCategory()))
@@ -37,37 +37,39 @@ public class EventMapper {
                 .initiator(UserMapper.toUserShortDto(event.getInitiator()))
                 .annotation(event.getAnnotation())
                 .description(event.getDescription())
-                .eventDate(event.getEventDate().format(DateTimeFormatter.ofPattern(Constants.DATE_FORMAT)))
+                .eventDate(event.getEventDate().format(Constants.FORMATTER))
                 .publishedOn(event.getPublishedOn())
                 .location(new Location(event.getLat(), event.getLon()))
-                .paid(event.getPaid())
+                .paid(event.isPaid())
                 .state(event.getState())
-                .views(event.getViews())
                 .participantLimit(event.getParticipantLimit())
-                .requestModeration(event.getRequestModeration())
+                .requestModeration(event.isRequestModeration())
                 .title(event.getTitle())
                 .build();
     }
 
-    public static EventShortDto toEventShortDto(Event event) {
+    public EventShortDto toEventShortDto(Event event) {
         return EventShortDto.builder()
                 .annotation(event.getAnnotation())
                 .category(CategoryMapper.toCategoryDto(event.getCategory()))
                 .initiator(UserMapper.toUserShortDto(event.getInitiator()))
                 .confirmedRequests(event.getConfirmedRequests())
-                .eventDate(event.getEventDate().format(DateTimeFormatter.ofPattern(Constants.DATE_FORMAT)))
+                .eventDate(event.getEventDate().format(Constants.FORMATTER))
                 .id(event.getId())
-                .paid(event.getPaid())
+                .paid(event.isPaid())
                 .title(event.getTitle())
-                .views(event.getViews())
                 .build();
     }
 
-    public static List<EventShortDto> toEventShortDtoList(List<Event> events) {
+    public List<EventShortDto> toEventShortDtoList(List<Event> events) {
         return events.stream().map(EventMapper::toEventShortDto).collect(Collectors.toList());
     }
 
-    public static List<EventFullDto> toEventFullDtoList(List<Event> events) {
+    public Set<EventShortDto> toEventShortDtoList(Set<Event> events) {
+        return events.stream().map(EventMapper::toEventShortDto).collect(Collectors.toSet());
+    }
+
+    public List<EventFullDto> toEventFullDtoList(List<Event> events) {
         return events.stream().map(EventMapper::toEventDto).collect(Collectors.toList());
     }
 }

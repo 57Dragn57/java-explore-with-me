@@ -1,4 +1,4 @@
-package ru.practicum.services;
+package ru.practicum.services.publics;
 
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -14,17 +14,16 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 @Transactional(readOnly = true)
-public class CompilationService {
+public class PublicCompilationService {
     private CompilationRepository compilationRepository;
 
     public List<CompilationDto> getCompilations(Boolean pinned, int from, int size) {
-        List<CompilationDto> compDto = CompilationMapper.toCompilationDtoList(compilationRepository.findAllByPinned(pinned, PageRequest.of(from / size, size)).toList());
+        if (pinned != null) {
+            return CompilationMapper.toCompilationDtoList(compilationRepository.findAllByPinned(pinned, PageRequest.of(from / size, size)).toList());
 
-        if (compDto.size() == 0) {
-            return List.of();
+        } else {
+            return CompilationMapper.toCompilationDtoList(compilationRepository.findAll(PageRequest.of(from / size, size)).toList());
         }
-
-        return compDto;
     }
 
     public CompilationDto getCompilation(long id) {

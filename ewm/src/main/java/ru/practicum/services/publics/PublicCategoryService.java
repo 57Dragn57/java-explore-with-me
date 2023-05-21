@@ -1,4 +1,4 @@
-package ru.practicum.services;
+package ru.practicum.services.publics;
 
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -14,17 +14,11 @@ import java.util.List;
 @Service
 @Transactional(readOnly = true)
 @AllArgsConstructor
-public class CategoryService {
+public class PublicCategoryService {
     private CategoryRepository categoryRepository;
 
     public List<CategoryDto> getCategories(int from, int size) {
-        List<CategoryDto> catDto = CategoryMapper.toCategoryDtoList(categoryRepository.findAll(PageRequest.of(from / size, size)).toList());
-
-        if (catDto.isEmpty()) {
-            return List.of();
-        }
-
-        return catDto;
+        return CategoryMapper.toCategoryDtoList(categoryRepository.findAll(PageRequest.of(from / size, size)).toList());
     }
 
     public CategoryDto getCategory(long catId) {

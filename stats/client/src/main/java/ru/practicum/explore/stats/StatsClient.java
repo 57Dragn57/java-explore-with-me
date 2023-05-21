@@ -3,6 +3,7 @@ package ru.practicum.explore.stats;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ public class StatsClient extends BaseClient {
         rest.exchange("/hit", HttpMethod.POST, requestEntity, Object.class);
     }
 
-    public ResponseEntity<Object> getStats(String start, String end, List<String> uris, Boolean unique) {
+    public List<VisitDto> getStats(String start, String end, List<String> uris, Boolean unique) {
         StringBuilder requestString = new StringBuilder("/stats?"
                 + "start=" + start
                 + "&end=" + end
@@ -44,7 +45,13 @@ public class StatsClient extends BaseClient {
             requestString.append("&uris=").append(uri);
         }
 
-        return get(requestString.toString());
+        return rest.exchange(
+                requestString.toString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<VisitDto>>() {
+                }
+        ).getBody();
     }
 
 }

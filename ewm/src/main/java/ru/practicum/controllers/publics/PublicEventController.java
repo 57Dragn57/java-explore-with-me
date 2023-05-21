@@ -1,4 +1,4 @@
-package ru.practicum.controllers;
+package ru.practicum.controllers.publics;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.Constants;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
-import ru.practicum.services.EventService;
+import ru.practicum.services.publics.PublicEventService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
@@ -20,8 +20,8 @@ import java.util.List;
 @Slf4j
 @RequestMapping("/events")
 @Validated
-public class EventController {
-    private EventService eventService;
+public class PublicEventController {
+    private PublicEventService publicEventService;
 
     @GetMapping
     public List<EventShortDto> getEventsByFilters(@RequestParam(required = false) String text,
@@ -35,7 +35,7 @@ public class EventController {
                                                   @RequestParam(defaultValue = "10") int size,
                                                   HttpServletRequest request) {
         log.info("Поиск событий по фильтрам");
-        return eventService.getEventByFilters(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort,
+        return publicEventService.getEventByFilters(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort,
                 from, size, request.getRemoteAddr(), request.getRequestURI());
     }
 
@@ -43,6 +43,6 @@ public class EventController {
     public EventFullDto getEventById(@Positive @PathVariable long id,
                                      HttpServletRequest request) {
         log.info("Получить событие по его id: {}", id);
-        return eventService.getEventById(id, request.getRemoteAddr(), request.getRequestURI());
+        return publicEventService.getEventById(id, request.getRemoteAddr(), request.getRequestURI());
     }
 }

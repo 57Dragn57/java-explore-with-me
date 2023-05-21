@@ -33,15 +33,14 @@ public class Event {
     private User initiator;
     private float lat;
     private float lon;
-    private Boolean paid;
+    private boolean paid;
     @Column(name = "participant_limit")
     private int participantLimit;
     @Column(name = "published_date")
     private LocalDateTime publishedOn;
     @Column(name = "request_moderation")
-    private Boolean requestModeration;
+    private boolean requestModeration;
     @Enumerated(EnumType.STRING)
     private State state;
     private String title;
-    private int views;
 }

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.model.Location;
 import ru.practicum.stats.State;
 
 import java.time.LocalDateTime;
@@ -29,5 +28,5 @@ public class EventFullDto {
     private Boolean requestModeration;
     private State state;
     private String title;
-    private int views;
+    private long views;
 }

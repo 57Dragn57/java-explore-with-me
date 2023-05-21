@@ -14,11 +14,11 @@ import java.time.LocalDateTime;
 
 @UtilityClass
 public class UpdateEventValid {
-    public static EventFullDto valid(Event event, UpdateEventRequest eventRequest) {
-        if (eventRequest.getAnnotation() != null) {
+    public static EventFullDto valid(Event event, UpdateEventRequest eventRequest, String permission) {
+        if (eventRequest.getAnnotation() != null && !eventRequest.getAnnotation().isBlank()) {
             event.setAnnotation(eventRequest.getAnnotation());
         }
-        if (eventRequest.getDescription() != null) {
+        if (eventRequest.getDescription() != null && !eventRequest.getDescription().isBlank()) {
             event.setDescription(eventRequest.getDescription());
         }
         if (eventRequest.getEventDate() != null) {
@@ -41,7 +41,7 @@ public class UpdateEventValid {
         if (eventRequest.getRequestModeration() != null) {
             event.setRequestModeration(eventRequest.getRequestModeration());
         }
-        if (eventRequest.getTitle() != null) {
+        if (eventRequest.getTitle() != null && !eventRequest.getTitle().isBlank()) {
             event.setTitle(eventRequest.getTitle());
         }
         if (eventRequest.getStateAction() != null) {
@@ -50,11 +50,15 @@ public class UpdateEventValid {
             switch (stateAction) {
                 case PUBLISH_EVENT:
                     if (LocalDateTime.now().plusHours(1).isBefore(event.getEventDate())) {
-                        if (event.getState().equals(State.PENDING)) {
-                            event.setState(State.PUBLISHED);
-                            event.setPublishedOn(LocalDateTime.now());
+                        if (permission.equals("admin")) {
+                            if (event.getState().equals(State.PENDING)) {
+                                event.setState(State.PUBLISHED);
+                                event.setPublishedOn(LocalDateTime.now());
+                            } else {
+                                throw new ConflictException("Event already canceled/published");
+                            }
                         } else {
-                            throw new ConflictException("Event already canceled/published");
+                            throw new ConflictException("Invalid status format");
                         }
                     } else {
                         throw new ForbiddenException("Cannot publish the event because it's not in the right state: " + eventRequest.getStateAction());

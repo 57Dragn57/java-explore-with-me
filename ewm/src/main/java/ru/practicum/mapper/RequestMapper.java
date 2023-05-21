@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class RequestMapper {
-    public static ParticipationRequestDto toRequestDto(Request request) {
+    public ParticipationRequestDto toRequestDto(Request request) {
         return ParticipationRequestDto.builder()
                 .id(request.getId())
                 .requester(request.getUser().getId())
@@ -19,7 +19,7 @@ public class RequestMapper {
                 .build();
     }
 
-    public static List<ParticipationRequestDto> toRequestDtoList(List<Request> requests) {
+    public List<ParticipationRequestDto> toRequestDtoList(List<Request> requests) {
         return requests.stream().map(RequestMapper::toRequestDto).collect(Collectors.toList());
     }
 }
