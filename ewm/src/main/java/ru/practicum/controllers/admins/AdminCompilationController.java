@@ -3,7 +3,6 @@ package ru.practicum.controllers.admins;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.CompilationDto;
 import ru.practicum.dto.NewCompilationDto;
@@ -16,7 +15,6 @@ import javax.validation.Valid;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/admin")
-@Validated
 public class AdminCompilationController {
     private AdminCompilationService adminCompilationService;
 

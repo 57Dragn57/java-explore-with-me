@@ -7,7 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.Constants;
 import ru.practicum.dto.EventFullDto;
-import ru.practicum.dto.UpdateEventRequest;
+import ru.practicum.dto.UpdateEventAdminRequest;
 import ru.practicum.services.admins.AdminEventService;
 
 import javax.validation.constraints.Positive;
@@ -36,7 +36,7 @@ public class AdminEventController {
     }
 
     @PatchMapping("/events/{eventId}")
-    public EventFullDto updateEvent(@Positive @PathVariable long eventId, @RequestBody UpdateEventRequest eventRequest) {
+    public EventFullDto updateEvent(@Positive @PathVariable long eventId, @RequestBody UpdateEventAdminRequest eventRequest) {
         log.info("Обновление события id: {}", eventId);
         return adminEventService.updateEvent(eventId, eventRequest);
     }

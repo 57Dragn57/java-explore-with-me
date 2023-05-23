@@ -18,7 +18,6 @@ create table if not exists events
     id                 bigint generated always as identity primary key not null,
     annotation         varchar(1000)                                   not null,
     category           bigint references categories,
-    confirmed_requests bigint,
     create_date        timestamp without time zone,
     description        varchar(3000),
     event_date         timestamp without time zone                     not null,

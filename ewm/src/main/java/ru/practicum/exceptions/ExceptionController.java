@@ -3,6 +3,7 @@ package ru.practicum.exceptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -14,12 +15,12 @@ import java.util.List;
 @Slf4j
 public class ExceptionController {
 
- /*   @ExceptionHandler
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleThrowable(Throwable e) {
         log.debug("Получен статус 500 INTERNAL SERVER ERROR {}", e.getMessage(), e);
         return new ApiError("An unexpected error has occurred.", "The required object was not found.", HttpStatus.INTERNAL_SERVER_ERROR, List.of());
-    }*/
+    }
 
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -59,6 +60,13 @@ public class ExceptionController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ApiError methodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.debug("Получен статус 400 Bad request {}", e.getMessage(), e);
+        return new ApiError(e.getMessage(), "An unexpected error has occurred.", HttpStatus.BAD_REQUEST, List.of());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ApiError methodArgumentNotValidException(MissingServletRequestParameterException e) {
         log.debug("Получен статус 400 Bad request {}", e.getMessage(), e);
         return new ApiError(e.getMessage(), "An unexpected error has occurred.", HttpStatus.BAD_REQUEST, List.of());
     }

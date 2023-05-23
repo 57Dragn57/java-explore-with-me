@@ -6,7 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.EventFullDto;
-import ru.practicum.dto.UpdateEventRequest;
+import ru.practicum.dto.UpdateEventAdminRequest;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
@@ -16,8 +16,8 @@ import ru.practicum.stats.State;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static ru.practicum.valid.UpdateEventValid.valid;
@@ -37,8 +37,8 @@ public class AdminEventService {
                                           int from,
                                           int size) {
 
-        Collection<State> stateList = (states == null) ? Collections.emptyList()
-                : states.stream().map(State::valueOf).collect(Collectors.toList());
+        Collection<State> stateList = (states != null) ? states.stream().map(State::valueOf).collect(Collectors.toList()) : null;
+
 
         return EventMapper.toEventFullDtoList(eventRepository.searchEvents(
                 users,
@@ -50,13 +50,17 @@ public class AdminEventService {
     }
 
     @Transactional
-    public EventFullDto updateEvent(long eventId, UpdateEventRequest eventRequest) {
+    public EventFullDto updateEvent(long eventId, UpdateEventAdminRequest eventRequest) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
-        if (eventRequest.getCategory() != 0) {
+        String state = Optional.ofNullable(eventRequest.getStateAction())
+                .map(cat -> eventRequest.getStateAction().name())
+                .orElse(null);
+
+        if (eventRequest.getCategory() != null) {
             event.setCategory(categoryRepository.getReferenceById(eventRequest.getCategory()));
         }
 
-        return valid(event, eventRequest, "admin");
+        return valid(event, eventRequest, state);
     }
 }

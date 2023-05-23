@@ -20,10 +20,11 @@ public class AdminCategoryService {
 
     @Transactional
     public CategoryDto createCategory(CategoryDto categoryDto) {
-        if (categoryRepository.existsByName(categoryDto.getName())) {
+        try {
+            return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(categoryDto)));
+        } catch (Exception e) {
             throw new ConflictException("This category name already exists");
         }
-        return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(categoryDto)));
     }
 
     @Transactional

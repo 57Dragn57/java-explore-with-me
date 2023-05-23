@@ -1,6 +1,7 @@
 package ru.practicum.model;
 
 import lombok.*;
+import org.hibernate.annotations.Formula;
 import ru.practicum.stats.State;
 
 import javax.persistence.*;
@@ -14,20 +15,20 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "events")
 public class Event {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
     private String annotation;
     @ManyToOne(optional = false)
     @JoinColumn(name = "category", nullable = false)
     private Category category;
-    @Column(name = "confirmed_requests")
+    @Formula("(SELECT COUNT(*) FROM requests WHERE requests.event_id = id AND requests.status = 'CONFIRMED')")
     private int confirmedRequests;
     @Column(name = "create_date")
     private LocalDateTime createdOn;
     private String description;
     @Column(name = "event_date")
     private LocalDateTime eventDate;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
     @ManyToOne(optional = false)
     @JoinColumn(name = "initiator", nullable = false)
     private User initiator;

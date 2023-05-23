@@ -23,6 +23,7 @@ import ru.practicum.stats.Status;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static ru.practicum.valid.UpdateEventValid.valid;
 
@@ -69,17 +70,21 @@ public class PrivateEventService {
     }
 
     @Transactional
-    public EventFullDto updateEvent(long userId, long eventId, UpdateEventRequest eventRequest) {
+    public EventFullDto updateEvent(long userId, long eventId, UpdateEventUserRequest eventRequest) {
         LocalDateTime timeValid = LocalDateTime.now().plusHours(2);
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+
+        String state = Optional.ofNullable(eventRequest.getStateAction())
+                .map(cat -> eventRequest.getStateAction().name())
+                .orElse(null);
 
         if (timeValid.isBefore(event.getEventDate()) &&
                 !event.getState().equals(State.PUBLISHED)) {
             if (event.getInitiator().getId() == userId) {
-                if (eventRequest.getCategory() != 0) {
+                if (eventRequest.getCategory() != null) {
                     event.setCategory(CategoryMapper.toCategory(categoryService.getCategory(eventRequest.getCategory())));
                 }
-                return valid(event, eventRequest, "user");
+                return valid(event, eventRequest, state);
             } else {
                 throw new ConflictException("You do not have rights to edit this event");
             }

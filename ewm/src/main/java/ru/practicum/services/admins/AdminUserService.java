@@ -20,16 +20,16 @@ public class AdminUserService {
 
     @Transactional
     public UserDto createUser(UserDto userDto) {
-        if (userRepository.existsByName(userDto.getName())) {
-            throw new ConflictException("This username already exists");
+        try {
+            return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userDto)));
+        } catch (Exception e) {
+            throw new ConflictException(e.getMessage());
         }
-        return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userDto)));
     }
 
     public List<UserDto> getUsers(List<Long> ids, int from, int size) {
         if (ids.isEmpty()) {
-            List<UserDto> userDtos = UserMapper.toUserDtoList(userRepository.findAll(PageRequest.of(from / size, size)).toList());
-            return userDtos;
+            return UserMapper.toUserDtoList(userRepository.findAll(PageRequest.of(from / size, size)).toList());
         } else {
             return UserMapper.toUserDtoList(userRepository.findAllById(ids));
         }

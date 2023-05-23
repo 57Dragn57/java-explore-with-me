@@ -11,10 +11,16 @@ import ru.practicum.stats.State;
 import ru.practicum.stats.StateAction;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @UtilityClass
 public class UpdateEventValid {
-    public static EventFullDto valid(Event event, UpdateEventRequest eventRequest, String permission) {
+    public static EventFullDto valid(Event event, UpdateEventRequest eventRequest, String stateAction) {
+
+        StateAction state = Optional.ofNullable(stateAction)
+                .map(cat -> StateAction.valueOf(stateAction))
+                .orElse(null);
+
         if (eventRequest.getAnnotation() != null && !eventRequest.getAnnotation().isBlank()) {
             event.setAnnotation(eventRequest.getAnnotation());
         }
@@ -35,7 +41,7 @@ public class UpdateEventValid {
         if (eventRequest.getPaid() != null) {
             event.setPaid(eventRequest.getPaid());
         }
-        if (eventRequest.getParticipantLimit() != 0) {
+        if (eventRequest.getParticipantLimit() != null) {
             event.setParticipantLimit(eventRequest.getParticipantLimit());
         }
         if (eventRequest.getRequestModeration() != null) {
@@ -44,24 +50,19 @@ public class UpdateEventValid {
         if (eventRequest.getTitle() != null && !eventRequest.getTitle().isBlank()) {
             event.setTitle(eventRequest.getTitle());
         }
-        if (eventRequest.getStateAction() != null) {
-            StateAction stateAction = StateAction.valueOf(eventRequest.getStateAction().name());
 
-            switch (stateAction) {
+        if (state != null) {
+            switch (state) {
                 case PUBLISH_EVENT:
                     if (LocalDateTime.now().plusHours(1).isBefore(event.getEventDate())) {
-                        if (permission.equals("admin")) {
-                            if (event.getState().equals(State.PENDING)) {
-                                event.setState(State.PUBLISHED);
-                                event.setPublishedOn(LocalDateTime.now());
-                            } else {
-                                throw new ConflictException("Event already canceled/published");
-                            }
+                        if (event.getState().equals(State.PENDING)) {
+                            event.setState(State.PUBLISHED);
+                            event.setPublishedOn(LocalDateTime.now());
                         } else {
-                            throw new ConflictException("Invalid status format");
+                            throw new ConflictException("Event already canceled/published");
                         }
                     } else {
-                        throw new ForbiddenException("Cannot publish the event because it's not in the right state: " + eventRequest.getStateAction());
+                        throw new ForbiddenException("Cannot publish the event because it's not in the right state: " + state);
                     }
                     break;
                 case REJECT_EVENT:
@@ -79,7 +80,6 @@ public class UpdateEventValid {
                         event.setState(State.PENDING);
                     }
                     break;
-
             }
         }
 

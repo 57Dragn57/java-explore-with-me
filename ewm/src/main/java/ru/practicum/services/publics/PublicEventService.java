@@ -45,19 +45,28 @@ public class PublicEventService {
                                                  String endpoint) {
         List<EventShortDto> events = EventMapper.toEventShortDtoList(eventRepository.findEventsByFilters(text, categories, paid, rangeStart, rangeEnd, onlyAvailable));
 
-        List<VisitDto> visits = visits();
-        events.stream()
-                .flatMap(event -> visits.stream()
-                        .filter(visit -> visit.getUri().contains(String.valueOf(event.getId())))
-                        .map(visit -> {
-                            event.setViews(visit.getHits());
-                            return event;
-                        })).distinct()
-                .collect(Collectors.toList());
-
         if (events.isEmpty()) {
             return List.of();
         }
+
+        String minEventDate = String.format(events.stream().map(EventShortDto::getEventDate)
+                .min(Comparator.naturalOrder())
+                .orElse(Constants.START), Constants.DATE_FORMAT);
+
+        List<String> uris = events.stream()
+                .map(event -> "event/" + event.getId())
+                .collect(Collectors.toList());
+
+        List<VisitDto> visits = visits(minEventDate, uris);
+        events.stream()
+                .flatMap(event -> visits.stream()
+                        .filter(visit -> visit.getUri().endsWith("/" + event.getId()))
+                        .map(visit -> {
+                            event.setViews(visit.getHits());
+                            return event;
+                        }))
+                .distinct()
+                .collect(Collectors.toList());
 
         if (sort != null) {
             if (Sorted.EVENT_DATE.toString().equals(sort)) {
@@ -90,7 +99,9 @@ public class PublicEventService {
 
         if (event.getState().equals(State.PUBLISHED)) {
 
-            for (VisitDto vd : visits()) {
+            String start = String.format(event.getEventDate(), Constants.FORMATTER);
+
+            for (VisitDto vd : visits(start, List.of(endpoint))) {
                 if (vd.getUri().contains(String.valueOf(event.getId()))) {
                     event.setViews(vd.getHits());
                 }
@@ -106,7 +117,7 @@ public class PublicEventService {
         statsClient.addHit(hitDto);
     }
 
-    private List<VisitDto> visits() {
-        return statsClient.getStats(Constants.START, Constants.END, List.of(), true);
+    private List<VisitDto> visits(String start, List<String> uris) {
+        return statsClient.getStats(start, Constants.END, uris, true);
     }
 }

@@ -25,10 +25,11 @@ public class AdminCompilationService {
     @Transactional
     public CompilationDto createCompilation(NewCompilationDto newCompilation) {
         Compilation compilation = CompilationMapper.toCompilation(newCompilation);
-        if (newCompilation.getEvents() == null) {
+        if (newCompilation.getEvents() == null && !newCompilation.getEvents().isEmpty()) {
             newCompilation.setEvents(List.of());
+        } else {
+            compilation.setEvents(new HashSet<>(eventRepository.findAllById(newCompilation.getEvents())));
         }
-        compilation.setEvents(new HashSet<>(eventRepository.findAllById(newCompilation.getEvents())));
         return CompilationMapper.toCompilationDto(compilationRepository.save(compilation));
     }
 
@@ -44,7 +45,7 @@ public class AdminCompilationService {
         if (compilationDto.getEvents() != null) {
             compilation.setEvents(new HashSet<>(eventRepository.findAllById(compilationDto.getEvents())));
         }
-        if (compilationDto.getTitle() != null) {
+        if (compilationDto.getTitle() != null && !compilationDto.getTitle().isBlank()) {
             compilation.setTitle(compilationDto.getTitle());
         }
 
