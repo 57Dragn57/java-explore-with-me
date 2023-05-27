@@ -29,7 +29,7 @@ create table if not exists events
     published_date     timestamp without time zone,
     request_moderation boolean,
     state              varchar(33),
-    title              varchar(200)                                    not null,
+    title              varchar(120)                                    not null,
     FOREIGN KEY (category) REFERENCES categories (id) ON DELETE CASCADE,
     FOREIGN KEY (initiator) REFERENCES users (id) ON DELETE CASCADE
 );
