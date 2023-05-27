@@ -3,6 +3,7 @@ package ru.practicum.explore.stats;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.explore.exception.ValidationException;
 import ru.practicum.explore.stats.model.Hit;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,10 @@ public class StatsService {
     public List<VisitDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
 
         List<HitShort> hits;
+
+        if (start.isAfter(end)) {
+            throw new ValidationException("The start date cannot be earlier than the end date");
+        }
 
         if (uris.size() == 0) {
             if (unique) {
