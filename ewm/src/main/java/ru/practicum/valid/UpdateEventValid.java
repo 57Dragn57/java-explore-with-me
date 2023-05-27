@@ -5,6 +5,7 @@ import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.UpdateEventRequest;
 import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.ForbiddenException;
+import ru.practicum.exceptions.ValidationException;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
 import ru.practicum.stats.State;
@@ -31,7 +32,7 @@ public class UpdateEventValid {
             if (LocalDateTime.now().plusHours(1).isBefore(eventRequest.getEventDate())) {
                 event.setEventDate(eventRequest.getEventDate());
             } else {
-                throw new ConflictException("Event cannot start in the past");
+                throw new ValidationException("Event cannot start in the past");
             }
         }
         if (eventRequest.getLocation() != null) {

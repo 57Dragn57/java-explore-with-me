@@ -20,7 +20,7 @@ import java.util.List;
 public class StatsClient extends BaseClient {
 
     @Autowired
-    public StatsClient(@Value("${STATS_URL}") String serverUrl, RestTemplateBuilder builder) {
+    public StatsClient(@Value("${stats.url}") String serverUrl, RestTemplateBuilder builder) {
         super(
                 builder
                         .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))

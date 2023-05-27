@@ -28,7 +28,7 @@ public class AdminUserService {
     }
 
     public List<UserDto> getUsers(List<Long> ids, int from, int size) {
-        if (ids.isEmpty()) {
+        if (ids == null || ids.isEmpty()) {
             return UserMapper.toUserDtoList(userRepository.findAll(PageRequest.of(from / size, size)).toList());
         } else {
             return UserMapper.toUserDtoList(userRepository.findAllById(ids));

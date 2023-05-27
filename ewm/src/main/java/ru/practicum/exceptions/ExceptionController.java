@@ -66,7 +66,7 @@ public class ExceptionController {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ApiError methodArgumentNotValidException(MissingServletRequestParameterException e) {
+    public ApiError missingServletRequestParameterException(MissingServletRequestParameterException e) {
         log.debug("Получен статус 400 Bad request {}", e.getMessage(), e);
         return new ApiError(e.getMessage(), "An unexpected error has occurred.", HttpStatus.BAD_REQUEST, List.of());
     }

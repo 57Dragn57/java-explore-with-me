@@ -16,12 +16,12 @@ import java.util.Objects;
 @AllArgsConstructor
 public class NewEventDto {
     @NotBlank
-    @Size(max = 1000)
+    @Size(min = 20, max = 2000)
     private String annotation;
     @Positive
     private long category;
     @NotBlank
-    @Size(max = 3000)
+    @Size(min = 20, max = 7000)
     private String description;
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -31,7 +31,8 @@ public class NewEventDto {
     private boolean paid;
     @PositiveOrZero
     private int participantLimit;
-    private boolean requestModeration;
+    @Builder.Default
+    private Boolean requestModeration = true;
     @NotBlank
     @Size(max = 200)
     private String title;

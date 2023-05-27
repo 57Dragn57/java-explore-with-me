@@ -62,10 +62,16 @@ public class EventMapper {
     }
 
     public List<EventShortDto> toEventShortDtoList(List<Event> events) {
+        if (events == null) {
+            return null;
+        }
         return events.stream().map(EventMapper::toEventShortDto).collect(Collectors.toList());
     }
 
     public Set<EventShortDto> toEventShortDtoList(Set<Event> events) {
+        if (events == null) {
+            return null;
+        }
         return events.stream().map(EventMapper::toEventShortDto).collect(Collectors.toSet());
     }
 

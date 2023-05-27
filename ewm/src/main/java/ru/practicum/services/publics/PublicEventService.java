@@ -4,22 +4,24 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.Constants;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.exceptions.NotFoundException;
+import ru.practicum.exceptions.ValidationException;
 import ru.practicum.explore.stats.HitDto;
 import ru.practicum.explore.stats.StatsClient;
 import ru.practicum.explore.stats.VisitDto;
 import ru.practicum.mapper.EventMapper;
+import ru.practicum.model.Event;
 import ru.practicum.repositories.EventRepository;
 import ru.practicum.stats.Sorted;
 import ru.practicum.stats.State;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,22 +45,29 @@ public class PublicEventService {
                                                  int size,
                                                  String ip,
                                                  String endpoint) {
-        List<EventShortDto> events = EventMapper.toEventShortDtoList(eventRepository.findEventsByFilters(text, categories, paid, rangeStart, rangeEnd, onlyAvailable));
+        List<Event> events;
+        if (rangeStart == null || rangeStart.isBefore(rangeEnd)) {
+            events = eventRepository.findEventsByFilters(text, categories, paid, rangeStart, rangeEnd, onlyAvailable);
+        } else {
+            throw new ValidationException("Start date cannot be after end date");
+        }
 
         if (events.isEmpty()) {
             return List.of();
         }
 
-        String minEventDate = String.format(events.stream().map(EventShortDto::getEventDate)
+        String minPublishedDate = events.stream().map(Event::getEventDate)
                 .min(Comparator.naturalOrder())
-                .orElse(Constants.START), Constants.DATE_FORMAT);
+                .orElse(LocalDateTime.parse(Constants.START, DateTimeFormatter.ofPattern(Constants.DATE_FORMAT))).format(Constants.FORMATTER);
+
+        List<EventShortDto> eventDtos = EventMapper.toEventShortDtoList(events);
 
         List<String> uris = events.stream()
                 .map(event -> "event/" + event.getId())
                 .collect(Collectors.toList());
 
-        List<VisitDto> visits = visits(minEventDate, uris);
-        events.stream()
+        List<VisitDto> visits = visits(minPublishedDate, uris);
+        eventDtos.stream()
                 .flatMap(event -> visits.stream()
                         .filter(visit -> visit.getUri().endsWith("/" + event.getId()))
                         .map(visit -> {
@@ -70,23 +79,21 @@ public class PublicEventService {
 
         if (sort != null) {
             if (Sorted.EVENT_DATE.toString().equals(sort)) {
-                events.sort(Comparator.comparing(EventShortDto::getEventDate).reversed());
+                eventDtos.sort(Comparator.comparing(EventShortDto::getEventDate).reversed());
             } else if (Sorted.VIEWS.toString().equals(sort)) {
-                events.sort(Comparator.comparing(EventShortDto::getViews).reversed());
+                eventDtos.sort(Comparator.comparing(EventShortDto::getViews).reversed());
             }
         } else {
-            events.sort(Comparator.comparing(EventShortDto::getId).reversed());
+            eventDtos.sort(Comparator.comparing(EventShortDto::getId).reversed());
         }
 
-        Pageable pageable = PageRequest.of(from, size);
-
-        List<EventShortDto> pagedEvents = events
+        List<EventShortDto> pagedEvents = eventDtos
                 .stream()
                 .skip((long) from * (long) size)
                 .limit(size)
                 .collect(Collectors.toList());
 
-        Page<EventShortDto> page = new PageImpl<>(pagedEvents, pageable, events.size());
+        Page<EventShortDto> page = new PageImpl<>(pagedEvents, PageRequest.of(from, size), eventDtos.size());
 
         addHit(new HitDto(Constants.APP_NAME, endpoint, ip, LocalDateTime.now()));
         return page.getContent();
@@ -98,11 +105,8 @@ public class PublicEventService {
         EventFullDto event = EventMapper.toEventDto(eventRepository.findById(id).orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found")));
 
         if (event.getState().equals(State.PUBLISHED)) {
-
-            String start = String.format(event.getEventDate(), Constants.FORMATTER);
-
-            for (VisitDto vd : visits(start, List.of(endpoint))) {
-                if (vd.getUri().contains(String.valueOf(event.getId()))) {
+            for (VisitDto vd : visits(event.getPublishedOn().format(Constants.FORMATTER), List.of(endpoint))) {
+                if (vd.getUri().endsWith("/" + event.getId())) {
                     event.setViews(vd.getHits());
                 }
             }

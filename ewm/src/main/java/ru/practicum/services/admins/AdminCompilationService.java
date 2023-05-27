@@ -25,7 +25,7 @@ public class AdminCompilationService {
     @Transactional
     public CompilationDto createCompilation(NewCompilationDto newCompilation) {
         Compilation compilation = CompilationMapper.toCompilation(newCompilation);
-        if (newCompilation.getEvents() == null && !newCompilation.getEvents().isEmpty()) {
+        if (newCompilation.getEvents() == null) {
             newCompilation.setEvents(List.of());
         } else {
             compilation.setEvents(new HashSet<>(eventRepository.findAllById(newCompilation.getEvents())));

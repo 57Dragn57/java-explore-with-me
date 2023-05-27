@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.*;
 import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.NotFoundException;
+import ru.practicum.exceptions.ValidationException;
 import ru.practicum.mapper.CategoryMapper;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.mapper.RequestMapper;
@@ -46,7 +47,7 @@ public class PrivateEventService {
             event.setState(State.PENDING);
             return EventMapper.toEventDto(eventRepository.save(event));
         }
-        throw new ConflictException("Conflict of parameters date and time");
+        throw new ValidationException("Conflict of parameters date and time");
     }
 
     public List<EventShortDto> getEvents(long userId, int from, int size) {

@@ -10,6 +10,7 @@ import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.UpdateEventAdminRequest;
 import ru.practicum.services.admins.AdminEventService;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
@@ -36,7 +37,7 @@ public class AdminEventController {
     }
 
     @PatchMapping("/events/{eventId}")
-    public EventFullDto updateEvent(@Positive @PathVariable long eventId, @RequestBody UpdateEventAdminRequest eventRequest) {
+    public EventFullDto updateEvent(@Positive @PathVariable long eventId, @Valid @RequestBody UpdateEventAdminRequest eventRequest) {
         log.info("Обновление события id: {}", eventId);
         return adminEventService.updateEvent(eventId, eventRequest);
     }

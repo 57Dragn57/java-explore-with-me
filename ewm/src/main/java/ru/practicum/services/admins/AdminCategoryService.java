@@ -30,7 +30,9 @@ public class AdminCategoryService {
     @Transactional
     public CategoryDto updateCategory(long catId, CategoryDto categoryDto) {
         Category category = categoryRepository.findById(catId).orElseThrow(() -> new NotFoundException("Category with id=" + catId + " was not found"));
-        if (categoryRepository.existsByName(categoryDto.getName())) {
+        if (categoryDto.getName().equals(category.getName())) {
+            return CategoryMapper.toCategoryDto(category);
+        } else if (categoryRepository.existsByName(categoryDto.getName())) {
             throw new ConflictException("This category name already exists");
         }
         category.setName(categoryDto.getName());

@@ -49,11 +49,11 @@ public class PrivateRequestService {
 
         if (!requestRepository.existsByUserIdAndEventId(userId, eventId) && event.getInitiator().getId() != userId &&
                 event.getState() == State.PUBLISHED) {
-            if (event.getParticipantLimit() == 0 ||
-                    event.getParticipantLimit() > event.getConfirmedRequests()) {
+            if (event.getParticipantLimit() == 0) {
+                request.setStatus(Status.CONFIRMED);
+            } else if (event.getParticipantLimit() > event.getConfirmedRequests()) {
                 if (!event.isRequestModeration()) {
                     request.setStatus(Status.CONFIRMED);
-                    event.setConfirmedRequests(event.getConfirmedRequests() + 1);
                 } else {
                     request.setStatus(Status.PENDING);
                 }
