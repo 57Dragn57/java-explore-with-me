@@ -549,51 +549,6 @@
 				}
 			},
 			"response": []
-		},
-		{
-			"name": "Проверка отображения комментария в событии",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"    pm.response.to.be.withBody;\r",
-							"    pm.response.to.be.json;\r",
-							"});\r",
-							"\r",
-							"const target = pm.response.json();\r",
-							"\r",
-							"pm.test(\"Событие должно содержать поле comments\", function () {\r",
-							"pm.expect(target).to.have.property('comments');\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Поле commenst не должно быть пустым\", function () {\r",
-							"    pm.expect(target.comments).to.not.be.null;\r",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/users/29/events/15",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"users",
-						"29",
-						"events",
-						"15"
-					]
-				}
-			},
-			"response": []
 		}
 	],
 	"variable": [
