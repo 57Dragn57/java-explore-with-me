@@ -65,4 +65,29 @@ public class PrivateEventController {
         log.info("Изменение статуса запроса на участие в событии id: {}", eventId);
         return privateEventService.changeEventStatus(eventRequest, userId, eventId);
     }
+
+    @PostMapping("/{userId}/events/{eventId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommentDto createComment(@Valid @RequestBody CommentDto commentDto,
+                                    @Positive @PathVariable long eventId,
+                                    @Positive @PathVariable long userId) {
+        log.info("Добавление сообщения в событие с id:{}", eventId);
+        return privateEventService.createComment(commentDto, eventId, userId);
+    }
+
+    @PatchMapping("/{userId}/comments/{commId}")
+    public CommentDto updateComment(@Valid @RequestBody CommentDto commentDto,
+                                    @Positive @PathVariable long commId,
+                                    @Positive @PathVariable long userId) {
+        log.info("Обновление сообщения с id:{}", commId);
+        return privateEventService.updateComment(commentDto, commId, userId);
+    }
+
+    @DeleteMapping("/{userId}/comments/{commId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(@Positive @PathVariable long commId,
+                              @Positive @PathVariable long userId) {
+        log.info("Удаление комментария id:{}", commId);
+        privateEventService.deleteComment(commId, userId);
+    }
 }

@@ -11,6 +11,7 @@ import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
 import ru.practicum.repositories.CategoryRepository;
+import ru.practicum.repositories.CommentsRepository;
 import ru.practicum.repositories.EventRepository;
 import ru.practicum.stats.State;
 
@@ -28,6 +29,7 @@ import static ru.practicum.valid.UpdateEventValid.valid;
 public class AdminEventService {
     private EventRepository eventRepository;
     private CategoryRepository categoryRepository;
+    private CommentsRepository commentsRepository;
 
     public List<EventFullDto> searchEvent(List<Long> users,
                                           List<String> states,
@@ -62,5 +64,14 @@ public class AdminEventService {
         }
 
         return valid(event, eventRequest, state);
+    }
+
+    @Transactional
+    public void deleteComment(long commId) {
+        if (commentsRepository.existsById(commId)) {
+            commentsRepository.deleteById(commId);
+        } else {
+            throw new NotFoundException("This comment does not exist");
+        }
     }
 }

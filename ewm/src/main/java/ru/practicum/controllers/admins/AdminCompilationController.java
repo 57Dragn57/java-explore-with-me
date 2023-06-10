@@ -3,6 +3,7 @@ package ru.practicum.controllers.admins;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.CompilationDto;
 import ru.practicum.dto.NewCompilationDto;
@@ -10,11 +11,13 @@ import ru.practicum.dto.UpdateCompilationRequest;
 import ru.practicum.services.admins.AdminCompilationService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 
 @Slf4j
 @RestController
 @AllArgsConstructor
 @RequestMapping("/admin")
+@Validated
 public class AdminCompilationController {
     private AdminCompilationService adminCompilationService;
 
@@ -27,13 +30,13 @@ public class AdminCompilationController {
 
     @DeleteMapping("/compilations/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCompilation(@PathVariable long compId) {
+    public void deleteCompilation(@Positive @PathVariable long compId) {
         log.info("Удаление подборки id: {}", compId);
         adminCompilationService.deleteCompilation(compId);
     }
 
     @PatchMapping("/compilations/{compId}")
-    public CompilationDto updateCompilation(@PathVariable long compId, @Valid @RequestBody UpdateCompilationRequest compilation) {
+    public CompilationDto updateCompilation(@Positive @PathVariable long compId, @Valid @RequestBody UpdateCompilationRequest compilation) {
         log.info("Обновление подборки с id: {}", compId);
         return adminCompilationService.updateCompilation(compId, compilation);
     }

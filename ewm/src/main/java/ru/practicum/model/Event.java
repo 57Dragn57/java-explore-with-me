@@ -6,6 +6,7 @@ import ru.practicum.stats.State;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -44,4 +45,9 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private State state;
     private String title;
+    @ManyToMany
+    @JoinTable(name = "comments_events",
+            joinColumns = @JoinColumn(name = "event"),
+            inverseJoinColumns = @JoinColumn(name = "comment"))
+    private Set<Comment> comments;
 }
