@@ -7,12 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.dto.Location;
 import ru.practicum.dto.UpdateEventAdminRequest;
 import ru.practicum.dto.UpdateEventRequest;
 import ru.practicum.services.admins.AdminEventService;
-
-import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -29,7 +26,7 @@ class AdminEventControllerTest {
     private AdminEventService adminEventService;
 
     @Test
-    void searchEvent_thenStatusIsOk() throws Exception{
+    void searchEvent_thenStatusIsOk() throws Exception {
         mockMvc.perform(get("/admin/events")
                         .param("from", "0")
                         .param("size", "10"))
@@ -41,7 +38,7 @@ class AdminEventControllerTest {
     }
 
     @Test
-    void updateEvent_whenEventIsCorrect_thenStatusIsOk() throws Exception{
+    void updateEvent_whenEventIsCorrect_thenStatusIsOk() throws Exception {
         UpdateEventRequest event = UpdateEventAdminRequest.builder()
                 .annotation("qwert qwert qqwert qwert")
                 .description("asdsadasdsadasdasdasdasd")
@@ -57,7 +54,7 @@ class AdminEventControllerTest {
     }
 
     @Test
-    void updateEvent_whenEventIsNotCorrect_thenStatusIsBadRequest() throws Exception{
+    void updateEvent_whenEventIsNotCorrect_thenStatusIsBadRequest() throws Exception {
         UpdateEventRequest event = UpdateEventAdminRequest.builder()
                 .annotation("")
                 .description("")
