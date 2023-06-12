@@ -37,18 +37,11 @@ create table if not exists events
 create table if not exists comments
 (
     id          bigint generated always as identity primary key not null,
+    event       bigint references events                        not null,
     comment     varchar(9999)                                   not null,
     commentator bigint references users                         not null,
-    create_date timestamp without time zone                     not null
-);
-
-CREATE TABLE IF NOT EXISTS comments_events
-(
-    id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-    comment BIGINT                                          NOT NULL,
-    event   BIGINT                                          NOT NULL,
-    FOREIGN KEY (comment) REFERENCES comments (id) ON DELETE CASCADE,
-    FOREIGN KEY (event) REFERENCES events (id) ON DELETE CASCADE
+    create_date timestamp without time zone                     not null,
+    last_update timestamp without time zone
 );
 
 CREATE TABLE IF NOT EXISTS requests

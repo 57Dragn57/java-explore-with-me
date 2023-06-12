@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import ru.practicum.stats.State;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,5 +29,5 @@ public class EventFullDto {
     private State state;
     private String title;
     private long views;
-    private Set<CommentDto> comments;
+    private long countComments;
 }

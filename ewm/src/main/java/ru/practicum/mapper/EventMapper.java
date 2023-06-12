@@ -45,7 +45,6 @@ public class EventMapper {
                 .participantLimit(event.getParticipantLimit())
                 .requestModeration(event.isRequestModeration())
                 .title(event.getTitle())
-                .comments(CommentMapper.toCommentsDtoSet(event.getComments()))
                 .build();
     }
 

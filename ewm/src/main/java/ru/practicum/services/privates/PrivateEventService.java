@@ -4,20 +4,21 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.Constants;
 import ru.practicum.dto.*;
 import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.exceptions.ValidationException;
-import ru.practicum.mapper.*;
-import ru.practicum.model.Comment;
+import ru.practicum.mapper.CategoryMapper;
+import ru.practicum.mapper.EventMapper;
+import ru.practicum.mapper.RequestMapper;
+import ru.practicum.mapper.UserMapper;
 import ru.practicum.model.Event;
 import ru.practicum.model.Request;
-import ru.practicum.repositories.CommentsRepository;
 import ru.practicum.repositories.EventRepository;
 import ru.practicum.repositories.RequestRepository;
 import ru.practicum.services.admins.AdminUserService;
 import ru.practicum.services.publics.PublicCategoryService;
+import ru.practicum.services.publics.PublicCommentService;
 import ru.practicum.stats.State;
 import ru.practicum.stats.Status;
 
@@ -25,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static ru.practicum.valid.UpdateEventValid.valid;
 
@@ -37,7 +37,7 @@ public class PrivateEventService {
     private AdminUserService adminService;
     private EventRepository eventRepository;
     private RequestRepository requestRepository;
-    private CommentsRepository commentsRepository;
+    private PublicCommentService publicCommentService;
 
     @Transactional
     public EventFullDto createEvent(long userId, NewEventDto eventDto) {
@@ -47,10 +47,6 @@ public class PrivateEventService {
             event.setCreatedOn(LocalDateTime.now());
             event.setInitiator(UserMapper.toUser(adminService.getUser(userId)));
             event.setState(State.PENDING);
-
-            if (event.getComments() == null) {
-                event.setComments(Set.of());
-            }
 
             return EventMapper.toEventDto(eventRepository.save(event));
         }
@@ -71,7 +67,7 @@ public class PrivateEventService {
         EventFullDto event = EventMapper.toEventDto(eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found")));
 
         if (event.getInitiator().getId() == userId) {
-            return event;
+            return publicCommentService.findCommentCountsByEvent(List.of(event)).get(0);
         } else {
             throw new NotFoundException("Event with id=" + eventId + " was not found");
         }
@@ -92,7 +88,7 @@ public class PrivateEventService {
                 if (eventRequest.getCategory() != null) {
                     event.setCategory(CategoryMapper.toCategory(categoryService.getCategory(eventRequest.getCategory())));
                 }
-                return valid(event, eventRequest, state);
+                return publicCommentService.findCommentCountsByEvent(List.of(valid(event, eventRequest, state))).get(0);
             } else {
                 throw new ConflictException("You do not have rights to edit this event");
             }
@@ -147,43 +143,5 @@ public class PrivateEventService {
             }
         }
         return eventResult;
-    }
-
-    @Transactional
-    public CommentDto createComment(CommentDto commentDto, long eventId, long userId) {
-        commentDto.setCommentator(adminService.getUser(userId));
-        commentDto.setCreateDate(Constants.NOW);
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
-
-        if (event.getComments() == null) {
-            event.setComments(Set.of());
-        }
-
-        Comment comment = commentsRepository.save(CommentMapper.toComment(commentDto));
-        event.getComments().add(comment);
-
-        return CommentMapper.toCommentDto(comment);
-    }
-
-    @Transactional
-    public CommentDto updateComment(CommentDto commentDto, long commId, long userId) {
-        Comment comment = commentsRepository.findById(commId).orElseThrow(() -> new NotFoundException("Comment with id=" + commId + " was not found"));
-
-        if (comment.getCommentator().getId() == userId) {
-            comment.setComment(commentDto.getComment());
-            return CommentMapper.toCommentDto(comment);
-        } else {
-            throw new ValidationException("You cannot edit this comment");
-        }
-    }
-
-    @Transactional
-    public void deleteComment(long commId, long userId) {
-        Comment comment = commentsRepository.findById(commId).orElseThrow(() -> new NotFoundException("Comment with id=" + commId + " was not found"));
-        if (comment.getCommentator().getId() == userId) {
-            commentsRepository.deleteById(commId);
-        } else {
-            throw new ValidationException("You cannot delete this comment");
-        }
     }
 }

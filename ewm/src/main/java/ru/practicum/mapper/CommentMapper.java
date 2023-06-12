@@ -2,6 +2,7 @@ package ru.practicum.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.dto.CommentDto;
+import ru.practicum.dto.NewCommentDto;
 import ru.practicum.model.Comment;
 
 import java.util.Set;
@@ -9,12 +10,10 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class CommentMapper {
-    public Comment toComment(CommentDto commentDto) {
+
+    public Comment toComment(NewCommentDto commentDto) {
         return Comment.builder()
-                .id(commentDto.getId())
                 .comment(commentDto.getComment())
-                .commentator(UserMapper.toUser(commentDto.getCommentator()))
-                .createDate(commentDto.getCreateDate())
                 .build();
     }
 
@@ -24,6 +23,7 @@ public class CommentMapper {
                 .comment(comment.getComment())
                 .commentator(UserMapper.toUserDto(comment.getCommentator()))
                 .createDate(comment.getCreateDate())
+                .lastUpdate(comment.getLastUpdate())
                 .build();
     }
 
