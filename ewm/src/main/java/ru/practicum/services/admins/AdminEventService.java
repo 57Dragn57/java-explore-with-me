@@ -12,6 +12,7 @@ import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
 import ru.practicum.repositories.CategoryRepository;
 import ru.practicum.repositories.EventRepository;
+import ru.practicum.services.publics.PublicCommentService;
 import ru.practicum.stats.State;
 
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ import static ru.practicum.valid.UpdateEventValid.valid;
 public class AdminEventService {
     private EventRepository eventRepository;
     private CategoryRepository categoryRepository;
+    private PublicCommentService publicCommentService;
 
     public List<EventFullDto> searchEvent(List<Long> users,
                                           List<String> states,
@@ -40,13 +42,13 @@ public class AdminEventService {
         Collection<State> stateList = (states != null) ? states.stream().map(State::valueOf).collect(Collectors.toList()) : null;
 
 
-        return EventMapper.toEventFullDtoList(eventRepository.searchEvents(
+        return publicCommentService.findCommentCountsByEvent(EventMapper.toEventFullDtoList(eventRepository.searchEvents(
                 users,
                 stateList,
                 categories,
                 rangeStart,
                 rangeEnd,
-                PageRequest.of(from / size, size, Sort.by("eventDate"))).toList());
+                PageRequest.of(from / size, size, Sort.by("eventDate"))).toList()));
     }
 
     @Transactional
@@ -61,6 +63,6 @@ public class AdminEventService {
             event.setCategory(categoryRepository.getReferenceById(eventRequest.getCategory()));
         }
 
-        return valid(event, eventRequest, state);
+        return publicCommentService.findCommentCountsByEvent(List.of(valid(event, eventRequest, state))).get(0);
     }
 }

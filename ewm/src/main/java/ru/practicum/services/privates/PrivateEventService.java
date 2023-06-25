@@ -18,6 +18,7 @@ import ru.practicum.repositories.EventRepository;
 import ru.practicum.repositories.RequestRepository;
 import ru.practicum.services.admins.AdminUserService;
 import ru.practicum.services.publics.PublicCategoryService;
+import ru.practicum.services.publics.PublicCommentService;
 import ru.practicum.stats.State;
 import ru.practicum.stats.Status;
 
@@ -36,6 +37,7 @@ public class PrivateEventService {
     private AdminUserService adminService;
     private EventRepository eventRepository;
     private RequestRepository requestRepository;
+    private PublicCommentService publicCommentService;
 
     @Transactional
     public EventFullDto createEvent(long userId, NewEventDto eventDto) {
@@ -45,6 +47,7 @@ public class PrivateEventService {
             event.setCreatedOn(LocalDateTime.now());
             event.setInitiator(UserMapper.toUser(adminService.getUser(userId)));
             event.setState(State.PENDING);
+
             return EventMapper.toEventDto(eventRepository.save(event));
         }
         throw new ValidationException("Conflict of parameters date and time");
@@ -64,7 +67,7 @@ public class PrivateEventService {
         EventFullDto event = EventMapper.toEventDto(eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found")));
 
         if (event.getInitiator().getId() == userId) {
-            return event;
+            return publicCommentService.findCommentCountsByEvent(List.of(event)).get(0);
         } else {
             throw new NotFoundException("Event with id=" + eventId + " was not found");
         }
@@ -85,7 +88,7 @@ public class PrivateEventService {
                 if (eventRequest.getCategory() != null) {
                     event.setCategory(CategoryMapper.toCategory(categoryService.getCategory(eventRequest.getCategory())));
                 }
-                return valid(event, eventRequest, state);
+                return publicCommentService.findCommentCountsByEvent(List.of(valid(event, eventRequest, state))).get(0);
             } else {
                 throw new ConflictException("You do not have rights to edit this event");
             }

@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 public class PublicEventService {
     private EventRepository eventRepository;
     private StatsClient statsClient;
+    private PublicCommentService publicCommentService;
 
     public List<EventShortDto> getEventByFilters(String text,
                                                  List<Long> categories,
@@ -112,7 +113,7 @@ public class PublicEventService {
             }
 
             addHit(new HitDto(Constants.APP_NAME, endpoint, ip, LocalDateTime.now()));
-            return event;
+            return publicCommentService.findCommentCountsByEvent(List.of(event)).get(0);
         }
         throw new NotFoundException("Event with id=" + id + " was not found");
     }

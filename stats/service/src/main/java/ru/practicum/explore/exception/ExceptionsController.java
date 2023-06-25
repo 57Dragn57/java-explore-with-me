@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestControllerAdvice
 @Slf4j
-public class ExceptionController {
+public class ExceptionsController {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

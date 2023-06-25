@@ -41,4 +41,5 @@ public class AdminEventController {
         log.info("Обновление события id: {}", eventId);
         return adminEventService.updateEvent(eventId, eventRequest);
     }
+
 }
